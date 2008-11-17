@@ -1,0 +1,82 @@
+Easy Access
+===========
+
+Easy access control and roles for CRUD operations.
+
+Intended to be used with the restful-authentication, this plugin adds a simple
+role-based access control system for the standard CRUD operations. A default
+access control mechanism is supplied, but it can be overridden on a
+model-by-model basis allowing for very fine-grained control.
+
+
+Installation
+============
+
+./script/plugin install http://github.com/mrchucho/easy-access.git
+
+./script/generate easy_access Role
+
+
+Example
+=======
+
+In a Controller:
+
+    class RestrictedModelController < ApplicationController
+
+        def create
+            @model = RestrictedModel.build(params[:model])
+            raise PermissionDenied unless current_user.can_create?(@model)
+            @model.save!
+            redirect_to restricted_model_path(@model)
+        end
+
+        def show
+            raise PermissionDenied unless current_user.can_view?(@model)
+        end
+
+        def update
+            @model = RestrictedModel.find(params[:id])
+            raise PermissionDenied unless current_user.can_update?(@model)
+            @model.save!
+            redirect_to restricted_model_path(@model)
+        end
+
+        def destroy
+            @model = RestrictedModel.find(params[:id])
+            raise PermissionDenied unless current_user.can_destroy?(@model)
+            @model.destroy
+            redirect_to restricted_models_path
+        end
+
+
+To implement fine-grained access control for a specific model:
+
+    class RestrictedModel < ActiveRecord::Base
+        # ...
+        def can_be_viewed_by?(user)
+            user == self.user
+        end
+
+        def can_be_updated_by?(user)
+            if self.state == :closed
+                false
+            else
+                user == self.user
+            end
+        end
+
+        def can_be_destroyed_by?(user)
+            user.roles.any?{|r| r.name.eql?("Destroyer")}
+        end
+
+
+    class WriteOnlyModel < ActiveRecord::Base
+        # ...
+        def can_be_viewed_by?(user); false; end
+        def can_be_destroyed_by?(user); false; end
+        def can_be_created_by?(user); true; end
+        def can_be_updated_by?(user); true; end
+
+
+Copyright (c) 2008 Ralph M Churchill, released under the MIT license
