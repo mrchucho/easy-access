@@ -3,10 +3,15 @@ Easy Access
 
 Easy access control and roles for CRUD operations.
 
-Intended to be used with the restful-authentication, this plugin adds a simple
-role-based access control system for the standard CRUD operations. A default
-access control mechanism is supplied, but it can be overridden on a
-model-by-model basis allowing for very fine-grained control.
+Easy Access provides a mixin for your User model that adds a simple role-based
+access control system for the standard CRUD operations. A default access control
+routine is supplied, but it can be overridden on a model-by-model basis allowing
+for very fine-grained control.
+
+Every CRUD operation has a corresponding User method and model hook. Implement
+the model hooks(e.g. can_be_viewed_by?, can_be_edited_by?, etc.) and/or the
+default AccessSystem::has_privilege_for? to customize your specific access
+controls.
 
 
 Installation
@@ -20,7 +25,7 @@ Installation
 Example
 =======
 
-In a Controller:
+The can_(create|view|update|destroy)? methods can safely be used in any Controller:
 
     class RestrictedModelController < ApplicationController
 
@@ -50,7 +55,8 @@ In a Controller:
         end
 
 
-To implement fine-grained access control for a specific model:
+By default AccessSystem::has_privilege_for? provides coarse-grained access
+controls. To implement fine-grained access control for a specific model:
 
     class RestrictedModel < ActiveRecord::Base
         # ...
@@ -71,12 +77,15 @@ To implement fine-grained access control for a specific model:
         end
 
 
-    class WriteOnlyModel < ActiveRecord::Base
-        # ...
-        def can_be_viewed_by?(user); false; end
+    class ReadOnlyModel < ActiveRecord::Base
+        def can_be_viewed_by?(user); true; end
         def can_be_destroyed_by?(user); false; end
-        def can_be_created_by?(user); true; end
-        def can_be_updated_by?(user); true; end
+        def can_be_created_by?(user); false; end
+        def can_be_updated_by?(user); false; end
+
+
+Note that you only need to override those hooks for which more specific
+controls are required.
 
 
 Copyright (c) 2008 Ralph M Churchill, released under the MIT license
