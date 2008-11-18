@@ -42,7 +42,7 @@ module <%= namespace %>
       when :view
         true
       when :create, :update, :destroy
-        self.roles.any?{|r| r.name.eql?("Administrator")}
+        self.<%=association%>.any?{|r| r.name.eql?("Administrator")}
       else
         false
       end

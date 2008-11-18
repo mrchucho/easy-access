@@ -1,12 +1,13 @@
 class EasyAccessGenerator < Rails::Generator::NamedBase
   default_options :skip_migration => false
 
-  attr_reader :namespace, :module_prefix
+  attr_reader :namespace, :module_prefix, :association
 
   def initialize(runtime_args, runtime_options = {})
     super
     @namespace = (args.shift || '')
     @module_prefix = @namespace.blank? ? '' : "#{@namespace}::"
+    @association = class_name.downcase.pluralize
   end
 
   def manifest
@@ -43,7 +44,7 @@ class EasyAccessGenerator < Rails::Generator::NamedBase
       puts "- Include the AccessSystem module and #{class_name} association in your User model"
       puts "    class User < ActiveRecord::Base"
       puts "      include #{module_prefix}AccessSystem"
-      puts "      has_and_belongs_to_many :#{class_name.downcase.pluralize}"
+      puts "      has_and_belongs_to_many :#{association}"
       puts "      # ..."
       puts
       puts "- Customize the default access controls in #{module_prefix}AccessSytem::has_privilege_for?"
