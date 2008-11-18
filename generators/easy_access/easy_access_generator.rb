@@ -13,7 +13,7 @@ class EasyAccessGenerator < Rails::Generator::NamedBase
   def manifest
     recorded_session = record do |m|
       m.class_collisions class_path, "#{class_name}"
-      m.class_collisions [], "#{module_prefix}Exception", "#{module_prefix}AccessSystem"
+      m.class_collisions [], "#{module_prefix}AccessSystem"
 
       unless namespace.blank?
         m.directory File.join('lib', namespace.downcase)
@@ -22,7 +22,6 @@ class EasyAccessGenerator < Rails::Generator::NamedBase
 
       m.template 'model.rb', File.join('app/models', class_path, "#{file_name}.rb")
       m.template 'access_system.rb', File.join("lib/#{namespace.downcase}", 'access_system.rb')
-      m.template 'exception.rb', File.join("lib/#{namespace.downcase}", 'exception.rb')
 
       unless options[:skip_migration]
         m.migration_template 'migration.rb', 'db/migrate', :assigns => {
